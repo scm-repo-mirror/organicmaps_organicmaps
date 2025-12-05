@@ -52,8 +52,16 @@ std::string DebugPrint(glz::json_t const & json)
     return "<JSON_ERROR>";
 }
 
-bool GeojsonParser::Parse(std::string_view jsonContent)
+}  // namespace geojson
+
+bool DeserializerGeoJson::Parse(std::string_view jsonContent)
 {
+  // Make some classes from 'geojson' namespace visible here.
+  using geojson::GeoJsonGeometryLine;
+  using geojson::GeoJsonGeometryPoint;
+  using geojson::GeoJsonGeometryUnknown;
+  using geojson::JsonTMap;
+
   geojson::GeoJsonData geoJsonData;
 
   glz::opts constexpr opts{.comments = true, .error_on_unknown_keys = false, .error_on_missing_keys = false};
@@ -249,13 +257,11 @@ bool GeojsonParser::Parse(std::string_view jsonContent)
   return true;
 }
 
-}  // namespace geojson
-
 void DeserializerGeoJson::Deserialize(std::string_view content)
 {
   ASSERT(!content.empty(), ());
-  geojson::GeojsonParser parser(m_fileData);
-  if (!parser.Parse(content))
+
+  if (!this->Parse(content))
   {
     // Print corrupted GeoJson file for debug and restore purposes.
     if (content[0] == '{')
