@@ -81,20 +81,7 @@ struct GeoJsonData
 
 }  // namespace geojson
 
-// Writer and reader
-class GeoJsonWriter
-{
-public:
-  DECLARE_EXCEPTION(WriteGeoJsonException, RootException);
-
-  explicit GeoJsonWriter(Writer & writer) : m_writer(writer) {}
-
-  void Write(FileData const & fileData);
-
-private:
-  Writer & m_writer;
-};
-
+// Reader and Writer.
 class DeserializerGeoJson
 {
 public:
@@ -107,6 +94,19 @@ public:
 private:
   bool Parse(std::string_view jsonContent);
   FileData & m_fileData;
+};
+
+class GeoJsonWriter
+{
+public:
+  DECLARE_EXCEPTION(WriteGeoJsonException, RootException);
+
+  explicit GeoJsonWriter(Writer & writer) : m_writer(writer) {}
+
+  void Write(FileData const & fileData);
+
+private:
+  Writer & m_writer;
 };
 
 }  // namespace kml

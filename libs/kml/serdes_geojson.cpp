@@ -270,4 +270,33 @@ void DeserializerGeoJson::Deserialize(std::string_view content)
   }
 }
 
+void GeoJsonWriter::Write(FileData const & fileData)
+{
+  // Make some classes from 'geojson' namespace visible here.
+  using geojson::GeoJsonFeature;
+  using geojson::GeoJsonGeometryLine;
+  using geojson::GeoJsonGeometryPoint;
+  using geojson::GeoJsonGeometryUnknown;
+  using geojson::JsonTMap;
+
+  // Convert FileData to GeoJsonData and then let Glaze generate Json from it.
+  std::map<std::string, std::string> geoJsonProperties;  // Empty top level properties.
+
+  // Convert features
+  std::vector<GeoJsonFeature> geoJsonFeatures;
+  for (BookmarkData const & bookmark : fileData.m_bookmarksData)
+  {
+    auto const p = mercator::ToLatLon(bookmark.m_point);
+    GeoJsonGeometryPoint point{.coordinates = {p.m_lon, p.m_lat}};
+    JsonTMap bookmarkProperties{{"name", kml::GetDefaultStr(bookmark.m_name)},
+                                {"marker-color", toCssColor(bookmark.m_color.m_predefinedColor)}};
+    if (!bookmark.m_description.empty())
+      bookmarkProperties["description"] = kml::GetDefaultStr(bookmark.m_description);
+    GeoJsonFeature pointFeature{.geometry = point, .properties = bookmarkProperties};
+    geoJsonFeatures.push_back(std::move(pointFeature));
+  }
+
+  geojson::GeoJsonData geoJsonData{.features = geoJsonFeatures, .properties = geoJsonProperties};
+}
+
 }  // namespace kml
